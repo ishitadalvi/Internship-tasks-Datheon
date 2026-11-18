@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishita Dalvi - Developer Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #556B2F;
+            --nav: #3D5415;
+            --card: #4A5F26;
+            --text: #FAF3E0;
+            --accent: #E9B44C;
+            --border: rgba(250, 243, 224, 0.15);
+        }
+        [data-theme="light"] {
+            --bg: #F6F1E3;
+            --nav: #DCE5C8;
+            --card: #FFFFFF;
+            --text: #2B3A10;
+            --accent: #8A5A00;
+            --border: rgba(43, 58, 16, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inconsolata', monospace;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 90px;
+            background-color: var(--nav);
+        }
+        .right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        nav ul li {
+            list-style: none;
+            margin: 0 24px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text);
+        }
+        nav ul li a:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+        #themeBtn,
+        #menuBtn {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        #themeBtn:hover,
+        #menuBtn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        #menuBtn { display: none; }
+        .left {
+            font-size: 1.5rem;
+        }
+
+        .firstSection {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 120px 0;
+        }
+        .firstSection > div {
+            width: 30%;
+        }
+        .leftSection {
+            font-size: 3rem;
+        }
+        .rightSection img {
+            width: 80%;
+        }
+        .black {
+            color: var(--accent);
+            font-style: normal;
+        }
+        #element {
+            color: var(--accent);
+        }
+
+        .secondSection {
+            padding: 60px 8%;
+            display: block;
+        }
+        .secondSection h1 {
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .card h3 { margin-bottom: 8px; }
+        .card p { margin-bottom: 12px; }
+        .tech { font-size: 0.9rem; opacity: 0.8; }
+        .links a {
+            color: var(--accent);
+            margin-right: 16px;
+        }
+
+        .skillGroup { margin-bottom: 24px; }
+        .skillGroup h3 { margin-bottom: 10px; }
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .chips span {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        .contactText { margin-bottom: 16px; }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: var(--nav);
+            color: var(--text);
+        }
+
+        .aboutText { max-width: 700px; line-height: 1.6; margin-bottom: 20px; }
+        .btn {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--bg);
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+        }
+        .btn:hover { opacity: 0.85; }
+
+        @media (max-width: 768px) {
+            nav { flex-direction: column; height: auto; padding: 12px; gap: 10px; }
+            .right { flex-wrap: wrap; justify-content: center; }
+            #menuBtn { display: block; }
+            nav ul {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                order: 3;
+                text-align: center;
+            }
+            nav ul.open { display: flex; }
+            nav ul li { margin: 8px 0; }
+            .firstSection { flex-direction: column; margin: 60px 0; text-align: center; }
+            .firstSection > div { width: 90%; }
+            .leftSection { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="left">Ishita's Portfolio</div>
+            <div class="right">
+                <button id="menuBtn" type="button" aria-label="Toggle menu">☰</button>
+                <button id="themeBtn" type="button">Theme</button>
+                <ul id="navLinks">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="firstSection" id="home">
+            <div class="leftSection">
+                Hi, I am <span class="black"><b>Ishita</b></span>
+                <div> and I am a</div>
+                <span id="element"></span>
+            </div>
+            <div class="rightSection">
+                <img src="img.png" alt="Female Developer">
+            </div>
+        </section>
+
+        <section class="secondSection" id="about">
+            <h1>About Me</h1>
+            <p class="aboutText">
+                Second-year CSE student in Mumbai who enjoys designing interfaces and building them in code. I build web projects with login, databases and live deployments, and I’m growing towards full-stack development. I’m looking for a web development internship.
+            </p>
+            <a class="btn" href="Ishita_Dalvi_res.pdf" target="_blank">View Resume</a>
+        </section>
+
+        <section class="secondSection" id="projects">
+            <h1>Projects</h1>
+            <div class="cards">
+                <article class="card">
+                    <h3>EduTech</h3>
+                    <p>Doubt-solving and peer-notes platform with login, CRUD and upvoting.</p>
+                    <p class="tech">HTML · CSS · JavaScript · Node · MongoDB</p>
+                    <div class="links">
+                        <a href="https://github.com/ishitadalvi/EduTech-A-Doubt-Solving-Platform" target="_blank">GitHub</a>
+                        <a href="https://edu-tech-a-doubt-solving-platform.vercel.app/" target="_blank">Live Demo</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="secondSection" id="skills">
+            <h1>Skills</h1>
+            <div class="skillGroup">
+                <h3>Frontend</h3>
+                <div class="chips">
+                    <span>HTML</span><span>CSS</span><span>JavaScript</span>
+                </div>
+            </div>
+            <div class="skillGroup">
+                <h3>Backend</h3>
+                <div class="chips">
+                    <span>Node.js</span><span>MongoDB</span>
+                </div>
+            </div>
+            <div class="skillGroup">
+                <h3>Languages and Design</h3>
+                <div class="chips">
+                    <span>C</span><span>Java</span><span>Figma</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="secondSection" id="contact">
+            <h1>Contact</h1>
+            <p class="contactText">Open to internships. Let's connect!</p>
+            <div class="links">
+                <a href="mailto:ishitadalvi2006@gmail.com">Email</a>
+                <a href="https://github.com/ishitadalvi" target="_blank">GitHub</a>
+                <a href="https://www.linkedin.com/in/ishita-dalvi-4b41a433b/" target="_blank">LinkedIn</a>
+            </div>
+        </section>
+
+        <footer class="footer">© 2026 Ishita Dalvi</footer>
+    </main>
+
+    <script src="https://unpkg.com/typed.js@3.0.0/dist/typed.umd.js"></script>
+    <script>
+        // Typing animation
+        var typed = new Typed('#element', {
+            strings: ['Web Developer', '&amp; a UI/UX Designer.'],
+            typeSpeed: 50,
+        });
+
+        // Theme toggle
+        var root = document.documentElement;
+        var themeBtn = document.getElementById('themeBtn');
+
+        // Load saved theme on page load
+        try {
+            if (localStorage.getItem('theme') === 'light') {
+                root.dataset.theme = 'light';
+            }
+        } catch (e) {}
+
+        themeBtn.addEventListener('click', function () {
+            var next = root.dataset.theme === 'light' ? 'dark' : 'light';
+            if (next === 'light') {
+                root.dataset.theme = 'light';
+            } else {
+                root.removeAttribute('data-theme');
+            }
+            try { localStorage.setItem('theme', next); } catch (e) {}
+        });
+
+        // Hamburger menu
+        var menuBtn = document.getElementById('menuBtn');
+        var navLinks = document.getElementById('navLinks');
+
+        menuBtn.addEventListener('click', function () {
+            navLinks.classList.toggle('open');
+        });
+
+        // Close the menu when a link is tapped
+        navLinks.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                navLinks.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>
