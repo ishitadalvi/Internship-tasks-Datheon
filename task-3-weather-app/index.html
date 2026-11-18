@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skywatch</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; padding: 24px 14px 40px; color: #fff;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: linear-gradient(160deg, #3b4a6b, #1f2a44);
+    transition: background 0.6s;
+  }
+  /* background changes with data-theme (set from JavaScript) */
+  body[data-theme="sunny"]  { background: linear-gradient(160deg, #f6a623, #e8572a); }
+  body[data-theme="cloudy"] { background: linear-gradient(160deg, #7c8fa6, #4d5b70); }
+  body[data-theme="rainy"]  { background: linear-gradient(160deg, #3f6f95, #1d3b57); }
+  body[data-theme="snowy"]  { background: linear-gradient(160deg, #8fb3cf, #5d7f9e); }
+  body[data-theme="storm"]  { background: linear-gradient(160deg, #3a3560, #17152b); }
+  body[data-theme="night"]  { background: linear-gradient(160deg, #1b1f4b, #07091f); }
+
+  .app { max-width: 520px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin: 0 0 14px; letter-spacing: -0.02em; }
+
+  form { display: flex; gap: 8px; margin-bottom: 18px; }
+  input, button { font: inherit; }
+  input {
+    flex: 1; min-width: 0; padding: 12px 14px; border: 0; border-radius: 10px;
+    background: rgba(255,255,255,0.92); color: #1b2030;
+  }
+  button {
+    padding: 12px 18px; border: 0; border-radius: 10px; cursor: pointer; font-weight: 600;
+    background: #111827; color: #fff;
+  }
+  button:disabled { opacity: 0.5; cursor: wait; }
+  input:focus-visible, button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+  .panel { background: rgba(0,0,0,0.22); border-radius: 16px; padding: 20px; backdrop-filter: blur(4px); }
+  .hidden { display: none; }
+  .message { text-align: center; padding: 28px 12px; }
+
+  .spinner {
+    width: 38px; height: 38px; margin: 0 auto 12px; border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.3); border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .now { text-align: center; }
+  .city { font-size: 1.3rem; font-weight: 600; }
+  .icon { font-size: 4.2rem; line-height: 1.2; }
+  .temp { font-size: 3.6rem; font-weight: 300; line-height: 1; }
+  .cond { margin-top: 6px; font-size: 1.1rem; opacity: 0.92; }
+
+  .stats { display: flex; gap: 8px; margin: 18px 0; }
+  .stat { flex: 1; text-align: center; background: rgba(255,255,255,0.14); border-radius: 12px; padding: 10px 4px; }
+  .stat b { display: block; font-size: 1.05rem; }
+  .stat span { font-size: 0.78rem; opacity: 0.85; }
+
+  h2 { font-size: 1rem; margin: 0 0 8px; font-weight: 600; }
+  .forecast { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .day { text-align: center; background: rgba(255,255,255,0.14); border-radius: 12px; padding: 10px 2px; }
+  .day .name { font-size: 0.82rem; opacity: 0.9; }
+  .day .ico { font-size: 1.6rem; margin: 4px 0; }
+  .day .hi { font-weight: 600; }
+  .day .lo { font-size: 0.85rem; opacity: 0.75; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation-duration: 3s !important; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>Skywatch</h1>
+
+  <form id="searchForm">
+    <input id="cityInput" type="text" placeholder="Search any city" aria-label="City name" autocomplete="off">
+    <button id="searchBtn" type="submit">Search</button>
+  </form>
+
+  <!-- Only ONE of these four panels is visible at a time -->
+  <div id="idle" class="panel message">Type a city above to see live weather.</div>
+  <div id="loading" class="panel message hidden"><div class="spinner"></div>Fetching weather…</div>
+  <div id="error" class="panel message hidden" role="alert"></div>
+
+  <div id="result" class="panel hidden">
+    <div class="now">
+      <div class="city" id="cityName"></div>
+      <div class="icon" id="nowIcon"></div>
+      <div class="temp" id="nowTemp"></div>
+      <div class="cond" id="nowCond"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="humidity"></b><span>Humidity</span></div>
+      <div class="stat"><b id="wind"></b><span>Wind</span></div>
+      <div class="stat"><b id="pressure"></b><span>Pressure</span></div>
+    </div>
+    <h2>5-day forecast</h2>
+    <div class="forecast" id="forecast"></div>
+  </div>
+</main>
+
+<script>
+/* ============ 1. Weather codes -> label, icon, background theme ============ */
+function describe(code, isDay) {
+  let label, icon, theme;
+  if (code === 0)             { label = "Clear sky";     icon = isDay ? "☀️" : "🌙"; theme = "sunny"; }
+  else if (code === 1)        { label = "Mostly clear";  icon = isDay ? "🌤️" : "🌙"; theme = "sunny"; }
+  else if (code === 2)        { label = "Partly cloudy"; icon = isDay ? "⛅" : "☁️"; theme = "cloudy"; }
+  else if (code === 3)        { label = "Overcast";      icon = "☁️"; theme = "cloudy"; }
+  else if (code <= 48)        { label = "Fog";           icon = "🌫️"; theme = "cloudy"; }
+  else if (code <= 57)        { label = "Drizzle";       icon = "🌦️"; theme = "rainy"; }
+  else if (code <= 67)        { label = "Rain";          icon = "🌧️"; theme = "rainy"; }
+  else if (code <= 77)        { label = "Snow";          icon = "❄️"; theme = "snowy"; }
+  else if (code <= 82)        { label = "Rain showers";  icon = "🌧️"; theme = "rainy"; }
+  else if (code <= 86)        { label = "Snow showers";  icon = "🌨️"; theme = "snowy"; }
+  else                        { label = "Thunderstorm";  icon = "⛈️"; theme = "storm"; }
+
+  // Night overrides the background, except during rain, snow or storms
+  if (!isDay && (theme === "sunny" || theme === "cloudy")) theme = "night";
+  return { label, icon, theme };
+}
+
+/* ============ 2. Fetch functions (async/await + error handling) ============ */
+// Custom error type so we can show a friendly message for unknown cities
+class CityNotFoundError extends Error {}
+
+async function getCoordinates(city) {
+  const url = "https://geocoding-api.open-meteo.com/v1/search?count=1&name=" + encodeURIComponent(city);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Geocoding request failed");
+  const data = await response.json();
+  if (!data.results || data.results.length === 0) throw new CityNotFoundError();
+  const place = data.results[0];
+  return { name: place.name, country: place.country, latitude: place.latitude, longitude: place.longitude };
+}
+
+async function getWeather(latitude, longitude) {
+  const url = "https://api.open-meteo.com/v1/forecast" +
+    "?latitude=" + latitude + "&longitude=" + longitude +
+    "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,surface_pressure,weather_code,is_day" +
+    "&daily=temperature_2m_max,temperature_2m_min,weather_code" +
+    "&timezone=auto&forecast_days=5";
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Weather request failed");
+  return response.json();
+}
+
+/* ============ 3. Screen states: show exactly one panel ============ */
+const panels = ["idle", "loading", "error", "result"];
+function showPanel(name) {
+  panels.forEach(id => document.getElementById(id).classList.toggle("hidden", id !== name));
+}
+function showError(message) {
+  document.getElementById("error").textContent = message;
+  showPanel("error");
+}
+
+/* ============ 4. Rendering ============ */
+function weekday(isoDate) {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-IN", { weekday: "short" });
+}
+
+function render(place, data) {
+  const cur = data.current;
+  const now = describe(cur.weather_code, cur.is_day);
+
+  document.body.dataset.theme = now.theme;
+  document.getElementById("cityName").textContent = place.name + ", " + place.country;
+  document.getElementById("nowIcon").textContent = now.icon;
+  document.getElementById("nowTemp").textContent = Math.round(cur.temperature_2m) + "°C";
+  document.getElementById("nowCond").textContent = now.label;
+  document.getElementById("humidity").textContent = cur.relative_humidity_2m + "%";
+  document.getElementById("wind").textContent = Math.round(cur.wind_speed_10m) + " km/h";
+  document.getElementById("pressure").textContent = Math.round(cur.surface_pressure) + " hPa";
+
+  // Array.map(): one card per forecast day
+  const d = data.daily;
+  document.getElementById("forecast").innerHTML = d.time.map((date, i) => {
+    const info = describe(d.weather_code[i], 1);
+    return '<div class="day">' +
+      '<div class="name">' + (i === 0 ? "Today" : weekday(date)) + "</div>" +
+      '<div class="ico" title="' + info.label + '">' + info.icon + "</div>" +
+      '<div class="hi">' + Math.round(d.temperature_2m_max[i]) + "°</div>" +
+      '<div class="lo">' + Math.round(d.temperature_2m_min[i]) + "°</div></div>";
+  }).join("");
+
+  showPanel("result");
+}
+
+/* ============ 5. Search flow ============ */
+const form = document.getElementById("searchForm");
+const input = document.getElementById("cityInput");
+const button = document.getElementById("searchBtn");
+
+async function searchCity(city) {
+  city = city.trim();
+  if (!city) { showError("Please type a city name."); return; }
+
+  showPanel("loading");
+  button.disabled = true;
+  try {
+    const place = await getCoordinates(city);
+    const data = await getWeather(place.latitude, place.longitude);
+    render(place, data);
+    try { localStorage.setItem("skywatch.lastCity", city); } catch (e) {}
+  } catch (err) {
+    if (err instanceof CityNotFoundError) {
+      showError("We couldn't find “" + city + "”. Check the spelling and try again.");
+    } else if (err instanceof TypeError) {
+      showError("Network problem. Check your internet connection and try again.");  // fetch fails with TypeError offline
+    } else {
+      showError("Something went wrong while fetching the weather. Please try again.");
+    }
+  } finally {
+    button.disabled = false;   // runs on success AND failure
+  }
+}
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  searchCity(input.value);
+});
+
+// On start: reload the last searched city, if any
+try {
+  const last = localStorage.getItem("skywatch.lastCity");
+  if (last) { input.value = last; searchCity(last); }
+} catch (e) {}
+</script>
+</body>
+</html>
